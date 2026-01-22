@@ -1,29 +1,14 @@
 package com.example.sample;
 
-import java.util.Arrays;
-import java.util.Scanner;
-
 public class SampleApplication {
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter two number and an operator (e.g 1+2):");
-        String result = sc.nextLine();
-        String[] parts = result.split(" ");
 
-        long num1 = Long.parseLong(parts[0]);
-        long num2 = Long.parseLong(parts[2]);
-        String operator = parts[1];
-        for (String part : parts) {
-            System.out.println(part);
-        }
-        long answer = switch (operator) {
-            case "+" -> num1 + num2;
-            case "-" -> num1 - num2;
-            case "*" -> num1 * num2;
-            case "/" -> num1 / num2;
-            default -> throw new InvalidOperatorException();
-        };
+        CalculationRequest calculationRequest = new CalculatorRequestReader().reader();
+        long answer = new Calculator().calculate(
+                calculationRequest.getNum1(),
+                calculationRequest.getOperator(),
+                calculationRequest.getNum2());
         System.out.println("answer = " + answer);
 
     }
