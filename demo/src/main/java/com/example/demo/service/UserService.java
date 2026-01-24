@@ -10,7 +10,6 @@ import com.example.demo.repository.UserEntity;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -29,8 +28,13 @@ public class UserService {
     //@Value("${spring.mail.username}")
     //private String mailFrom;
 
-    public Optional<UserEntity> getById(long id) {
+    public Optional<UserEntity> findById(long id) {
         return userRepository.findByIdAndStatus(id, UserStatus.ACTIVE);
+    }
+
+    public UserEntity getById(long id) {
+        return userRepository.findByIdAndStatus(id, UserStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", id));
     }
 
     public UserEntity getByEmail(String email) {
@@ -44,7 +48,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserEntity createUser(UserCreateDto userCreateDto) {
+    public UserEntity create(UserCreateDto userCreateDto) {
         UserEntity userEntity = new UserEntity();
         userEntity.setEmail(userCreateDto.getEmail());
         userEntity.setNickname(userCreateDto.getNickname());
@@ -58,7 +62,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserEntity updateUser(long id, UserUpdateDto userUpdateDto) {
+    public UserEntity update(long id, UserUpdateDto userUpdateDto) {
         UserEntity userEntity = getByIdOrElseThrow(id);
         userEntity.setNickname(userUpdateDto.getNickname());
         userEntity.setAddress(userUpdateDto.getAddress());
