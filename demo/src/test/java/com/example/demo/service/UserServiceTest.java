@@ -1,6 +1,10 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.CertificationCodeNotMatchedException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.UserStatus;
+import com.example.demo.model.dto.UserCreateDto;
+import com.example.demo.model.dto.UserUpdateDto;
 import com.example.demo.repository.UserEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
@@ -8,8 +12,12 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -19,6 +27,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 
 @SpringBootTest
@@ -31,6 +40,9 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 
     @Autowired
     private UserService userService;
+
+    @MockBean
+    private JavaMailSender javaMailSender;
 
 
     @Test
@@ -59,8 +71,71 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void getById는_PENDING_상태인_사용자를_찾아올_수_없다(){
 
         assertThatThrownBy(()-> {
-            Optional<UserEntity> userEntity = userService.findById(2);
+            UserEntity userEntity = userService.getById(2);
         }).isInstanceOf(ResourceNotFoundException.class);
 
+    }
+
+    @Test
+    @Order(4)
+    public void getById는_ACTIVATE_상태인_사용자를_찾아올_수_있다(){
+        UserEntity userEntity = userService.getById(1);
+        assertThat(userEntity).isNotNull();
+    }
+
+    @Test
+    @Order(5)
+    public void UserCreateDto를_사용하여_사용자를_생성할_수_있다(){
+        UserCreateDto userCreateDto = UserCreateDto.builder()
+                .email("kok12180@mailinator.com")
+                .address("busan")
+                .nickname("kok202-1")
+                .build();
+
+        BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
+        UserEntity userEntity = userService.create(userCreateDto);
+        assertThat(userEntity.getId()).isNotNull();
+        assertThat(userEntity.getStatus()).isEqualTo(UserStatus.PENDING);
+    }
+
+    @Test
+    @Order(6)
+    public void UserUpdateDto를_사용해서_사용자_정보를_수정할_수_있다(){
+        UserUpdateDto updateUserDto = UserUpdateDto.builder()
+                .address("daegu")
+                .nickname("kok202-2")
+                .build();
+
+        userService.update(1, updateUserDto);
+        UserEntity userEntity = userService.getById(1);
+        assertThat(userEntity.getAddress()).isEqualTo(updateUserDto.getAddress());
+        assertThat(userEntity.getNickname()).isEqualTo(updateUserDto.getNickname());
+    }
+
+    @Test
+    @Order(7)
+    public void 사용자를_로그인시키면_마지막_로그인시간이_변경된다(){
+        userService.login(1);
+
+        UserEntity userEntity = userService.getById(1);
+        assertThat(userEntity.getLastLoginAt()).isGreaterThan(0);
+    }
+
+    @Test
+    @Order(8)
+    public void PENDING_상태인_사용자를_인증코드로_ACTIVATE_할_수_있다(){
+        userService.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab");
+
+        UserEntity userEntity = userService.getById(2);
+        assertThat(userEntity.getStatus()).isEqualTo(UserStatus.ACTIVE);
+    }
+
+    @Test
+    @Order(8)
+    public void PENDING_상태인_사용자가_잘못된_인증코드를_받으면_에러를_던진다(){
+
+        assertThatThrownBy(() ->
+        {userService.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac");})
+                .isInstanceOf(CertificationCodeNotMatchedException.class);
     }
 }
