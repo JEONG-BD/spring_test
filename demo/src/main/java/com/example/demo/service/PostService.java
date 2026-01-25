@@ -22,7 +22,7 @@ public class PostService {
         return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Posts", id));
     }
 
-    public PostEntity createg(PostCreateDto postCreateDto) {
+    public PostEntity create(PostCreateDto postCreateDto) {
         UserEntity userEntity = userService.getByIdOrElseThrow(postCreateDto.getWriterId());
         PostEntity postEntity = new PostEntity();
         postEntity.setWriter(userEntity);
