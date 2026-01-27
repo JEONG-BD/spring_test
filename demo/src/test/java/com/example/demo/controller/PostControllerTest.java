@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.dto.PostUpdateDto;
+import com.example.demo.post.domain.PostUpdate;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,8 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -62,7 +58,7 @@ public class PostControllerTest {
     @Test
     void 사용자는_게시물을_수정할_수_있다() throws Exception {
         // given
-        PostUpdateDto postUpdateDto = PostUpdateDto.builder()
+        PostUpdate postUpdate = PostUpdate.builder()
                 .content("foobar")
                 .build();
 
@@ -71,7 +67,7 @@ public class PostControllerTest {
         mockMvc.perform(
                         put("/api/posts/1")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(postUpdateDto)))
+                                .content(objectMapper.writeValueAsString(postUpdate)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.content").value("foobar"))

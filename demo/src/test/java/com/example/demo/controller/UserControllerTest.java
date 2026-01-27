@@ -1,12 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.UserStatus;
-import com.example.demo.model.dto.UserUpdateDto;
-import com.example.demo.repository.UserEntity;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.user.domain.UserStatus;
+import com.example.demo.user.domain.UserUpdate;
+import com.example.demo.user.infrastructure.UserEntity;
+import com.example.demo.user.infrastructure.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -19,10 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -93,7 +88,7 @@ public class UserControllerTest {
     @Test
     void 사용자는_내_정보를_수정할_수_있다() throws Exception {
 
-        UserUpdateDto userUpdateDto = UserUpdateDto.builder()
+        UserUpdate userUpdate = UserUpdate.builder()
                 .nickname("kok202-n")
                 .address("Pangyo")
                 .build();
@@ -102,7 +97,7 @@ public class UserControllerTest {
                         put("/api/users/me")
                                 .header("EMAIL", "kok202@naver.com")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(userUpdateDto)))
+                                .content(objectMapper.writeValueAsString(userUpdate)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.email").value("kok202@naver.com"))

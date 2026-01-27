@@ -1,12 +1,12 @@
 package com.example.demo.service;
 
-import com.example.demo.exception.CertificationCodeNotMatchedException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.UserStatus;
-import com.example.demo.model.dto.UserCreateDto;
-import com.example.demo.model.dto.UserUpdateDto;
-import com.example.demo.repository.UserEntity;
-import org.assertj.core.api.Assertions;
+import com.example.demo.common.domain.exception.CertificationCodeNotMatchedException;
+import com.example.demo.common.domain.exception.ResourceNotFoundException;
+import com.example.demo.user.domain.UserStatus;
+import com.example.demo.user.domain.UserCreate;
+import com.example.demo.user.domain.UserUpdate;
+import com.example.demo.user.infrastructure.UserEntity;
+import com.example.demo.user.service.UserService;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -23,10 +23,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 
@@ -86,14 +83,14 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Test
     @Order(5)
     public void UserCreateDto를_사용하여_사용자를_생성할_수_있다(){
-        UserCreateDto userCreateDto = UserCreateDto.builder()
+        UserCreate userCreate = UserCreate.builder()
                 .email("kok12180@mailinator.com")
                 .address("busan")
                 .nickname("kok202-1")
                 .build();
 
         BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
-        UserEntity userEntity = userService.create(userCreateDto);
+        UserEntity userEntity = userService.create(userCreate);
         assertThat(userEntity.getId()).isNotNull();
         assertThat(userEntity.getStatus()).isEqualTo(UserStatus.PENDING);
     }
@@ -101,7 +98,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Test
     @Order(6)
     public void UserUpdateDto를_사용해서_사용자_정보를_수정할_수_있다(){
-        UserUpdateDto updateUserDto = UserUpdateDto.builder()
+        UserUpdate updateUserDto = UserUpdate.builder()
                 .address("daegu")
                 .nickname("kok202-2")
                 .build();
