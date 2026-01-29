@@ -7,7 +7,7 @@ import com.example.demo.user.domain.UserStatus;
 import com.example.demo.user.domain.UserCreate;
 import com.example.demo.user.domain.UserUpdate;
 import com.example.demo.user.infrastructure.UserEntity;
-import com.example.demo.user.infrastructure.UserRepository;
+import com.example.demo.user.service.port.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -22,9 +22,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final CertificationService certificationService;
     private final UserRepository userRepository;
-    private final JavaMailSender mailSender;
-
     //@Value("${spring.mail.username}")
     //private String mailFrom;
 
@@ -56,8 +55,9 @@ public class UserService {
         userEntity.setStatus(UserStatus.PENDING);
         userEntity.setCertificationCode(UUID.randomUUID().toString());
         userEntity = userRepository.save(userEntity);
-        String certificationUrl = generateCertificationUrl(userEntity);
-        sendCertificationEmail(userCreate.getEmail(), certificationUrl);
+
+        certificationService.send(userCreate.getEmail(), userEntity.getId(), userEntity.getCertificationCode());
+
         return userEntity;
     }
 
@@ -85,16 +85,5 @@ public class UserService {
         userEntity.setStatus(UserStatus.ACTIVE);
     }
 
-    private void sendCertificationEmail(String email, String certificationUrl) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        //message.setFrom(mailFrom);
-        message.setTo(email);
-        message.setSubject("Please certify your email address");
-        message.setText("Please click the following link to certify your email address: " + certificationUrl);
-        mailSender.send(message);
-    }
 
-    private String generateCertificationUrl(UserEntity userEntity) {
-        return "http://localhost:8080/api/users/" + userEntity.getId() + "/verify?certificationCode=" + userEntity.getCertificationCode();
-    }
 }

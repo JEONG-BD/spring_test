@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 public class UserRepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserJpaRepository userJpaRepository;
 
     @Test
     @Order(1)
@@ -35,7 +35,7 @@ public class UserRepositoryTest {
         userEntity.setStatus(UserStatus.ACTIVE);
         userEntity.setCertificationCode("aaaaaaaa-aaaa-aaaaa-aaaa-aaaaaaaaaa");
         //when
-        UserEntity savedUser = userRepository.save(userEntity);
+        UserEntity savedUser = userJpaRepository.save(userEntity);
         //then
         assertThat(savedUser.getId()).isNotNull();
     }
@@ -45,7 +45,7 @@ public class UserRepositoryTest {
     void findByIdAndStatus는_데이터가_없으면_Optional_empty를_내려준다(){
         //given
         //when
-        Optional<UserEntity> result = userRepository.findByIdAndStatus(1, UserStatus.PENDING);
+        Optional<UserEntity> result = userJpaRepository.findByIdAndStatus(1, UserStatus.PENDING);
         //then
         assertThat(result.isEmpty()).isTrue();
     }
@@ -55,7 +55,7 @@ public class UserRepositoryTest {
     void findByEmailAndStatus로_사용자를_찾을_수_있다(){
         //given
         //when
-        Optional<UserEntity> result = userRepository.findByEmailAndStatus("test@test.com", UserStatus.ACTIVE);
+        Optional<UserEntity> result = userJpaRepository.findByEmailAndStatus("test@test.com", UserStatus.ACTIVE);
         //then
         assertThat(result.isPresent());
     }
@@ -64,7 +64,7 @@ public class UserRepositoryTest {
     void findByIdAndStatus로_사용자를_찾을_수_있다(){
         //given
         //when
-        Optional<UserEntity> result = userRepository.findByIdAndStatus(1, UserStatus.ACTIVE);
+        Optional<UserEntity> result = userJpaRepository.findByIdAndStatus(1, UserStatus.ACTIVE);
         //then
         assertThat(result.isPresent()).isTrue();
     }
