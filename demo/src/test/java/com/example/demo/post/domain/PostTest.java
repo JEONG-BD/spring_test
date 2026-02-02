@@ -1,5 +1,6 @@
 package com.example.demo.post.domain;
 
+import com.example.demo.mock.TestClockHolder;
 import com.example.demo.user.domain.User;
 import com.example.demo.user.domain.UserStatus;
 import org.assertj.core.api.Assertions;
@@ -27,7 +28,7 @@ class PostTest {
                 .certificationCode(UUID.randomUUID().toString())
                 .build();
 
-        Post post = Post.from(writer, postCreate);
+        Post post = Post.from(writer, postCreate,  new TestClockHolder(1679530673958L));
 
         //when
         Assertions.assertThat(post.getContent()).isEqualTo("hello world");
