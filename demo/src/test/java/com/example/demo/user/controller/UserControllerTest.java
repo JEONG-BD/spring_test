@@ -1,8 +1,8 @@
 package com.example.demo.user.controller;
 
+import com.example.demo.user.domain.User;
 import com.example.demo.user.domain.UserStatus;
 import com.example.demo.user.domain.UserUpdate;
-import com.example.demo.user.infrastructure.UserEntity;
 import com.example.demo.user.service.port.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -65,8 +65,8 @@ public class UserControllerTest {
         mockMvc.perform(get("/api/users/2/verify")
                 .queryParam("certificationCode","aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab"))
                 .andExpect(status().isFound());
-        UserEntity userEntity = userRepository.findById(1L).get();
-        Assertions.assertThat(userEntity.getStatus()).isEqualTo(UserStatus.ACTIVE);
+        User user = userRepository.findById(2L).get();
+        Assertions.assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE);
     }
 
 

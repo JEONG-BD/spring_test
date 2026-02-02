@@ -2,11 +2,10 @@ package com.example.demo.user.service;
 
 import com.example.demo.common.domain.exception.CertificationCodeNotMatchedException;
 import com.example.demo.common.domain.exception.ResourceNotFoundException;
+import com.example.demo.user.domain.User;
 import com.example.demo.user.domain.UserStatus;
 import com.example.demo.user.domain.UserCreate;
 import com.example.demo.user.domain.UserUpdate;
-import com.example.demo.user.infrastructure.UserEntity;
-import com.example.demo.user.service.UserService;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -46,11 +45,11 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Order(1)
     public void getByEmail은_ACTIVATE_상태인_사용자를_찾아올_수_있다(){
         String mail = "kok202@naver.com";
-        UserEntity userEntity = userService.getByEmail(mail);
+        User user = userService.getByEmail(mail);
 
-        assertThat(userEntity).isNotNull();
-        assertThat(userEntity.getEmail()).isEqualTo(mail);
-        assertThat(userEntity.getNickname()).isEqualTo("kok202");
+        assertThat(user).isNotNull();
+        assertThat(user.getEmail()).isEqualTo(mail);
+        assertThat(user.getNickname()).isEqualTo("kok202");
     }
 
     @Test
@@ -59,7 +58,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
         String mail = "kok303@naver.com";
 
         assertThatThrownBy(() ->  {
-            UserEntity userEntity = userService.getByEmail(mail);
+            User user = userService.getByEmail(mail);
         }).isInstanceOf(ResourceNotFoundException.class);
     }
 
@@ -68,7 +67,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void getById는_PENDING_상태인_사용자를_찾아올_수_없다(){
 
         assertThatThrownBy(()-> {
-            UserEntity userEntity = userService.getById(2);
+            User user = userService.getById(2);
         }).isInstanceOf(ResourceNotFoundException.class);
 
     }
@@ -76,8 +75,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Test
     @Order(4)
     public void getById는_ACTIVATE_상태인_사용자를_찾아올_수_있다(){
-        UserEntity userEntity = userService.getById(1);
-        assertThat(userEntity).isNotNull();
+        User user = userService.getById(1);
+        assertThat(user).isNotNull();
     }
 
     @Test
@@ -90,9 +89,9 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
                 .build();
 
         BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
-        UserEntity userEntity = userService.create(userCreate);
-        assertThat(userEntity.getId()).isNotNull();
-        assertThat(userEntity.getStatus()).isEqualTo(UserStatus.PENDING);
+        User User = userService.create(userCreate);
+        assertThat(User.getId()).isNotNull();
+        assertThat(User.getStatus()).isEqualTo(UserStatus.PENDING);
     }
 
     @Test
@@ -104,9 +103,9 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
                 .build();
 
         userService.update(1, updateUserDto);
-        UserEntity userEntity = userService.getById(1);
-        assertThat(userEntity.getAddress()).isEqualTo(updateUserDto.getAddress());
-        assertThat(userEntity.getNickname()).isEqualTo(updateUserDto.getNickname());
+        User User = userService.getById(1);
+        assertThat(User.getAddress()).isEqualTo(updateUserDto.getAddress());
+        assertThat(User.getNickname()).isEqualTo(updateUserDto.getNickname());
     }
 
     @Test
@@ -114,8 +113,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void 사용자를_로그인시키면_마지막_로그인시간이_변경된다(){
         userService.login(1);
 
-        UserEntity userEntity = userService.getById(1);
-        assertThat(userEntity.getLastLoginAt()).isGreaterThan(0);
+        User User = userService.getById(1);
+        assertThat(User.getLastLoginAt()).isGreaterThan(0);
     }
 
     @Test
@@ -123,8 +122,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void PENDING_상태인_사용자를_인증코드로_ACTIVATE_할_수_있다(){
         userService.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab");
 
-        UserEntity userEntity = userService.getById(2);
-        assertThat(userEntity.getStatus()).isEqualTo(UserStatus.ACTIVE);
+        User User = userService.getById(2);
+        assertThat(User.getStatus()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test
