@@ -12,6 +12,7 @@ import com.example.demo.user.domain.UserUpdate;
 import com.example.demo.user.infrastructure.UserEntity;
 import com.example.demo.user.service.port.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Builder
 @RequiredArgsConstructor
 public class UserService {
 
