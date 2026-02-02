@@ -1,4 +1,4 @@
-package com.example.demo.common.controller;
+package com.example.demo.medium;
 
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;

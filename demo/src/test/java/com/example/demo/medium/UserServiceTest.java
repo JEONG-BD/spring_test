@@ -1,16 +1,16 @@
-package com.example.demo.user.service;
+package com.example.demo.medium;
 
 import com.example.demo.common.domain.exception.CertificationCodeNotMatchedException;
 import com.example.demo.common.domain.exception.ResourceNotFoundException;
-import com.example.demo.mock.FakeUserRepository;
-import com.example.demo.mock.TestClockHolder;
-import com.example.demo.mock.TestUuidHolder;
 import com.example.demo.user.domain.User;
-import com.example.demo.user.domain.UserCreate;
 import com.example.demo.user.domain.UserStatus;
+import com.example.demo.user.domain.UserCreate;
 import com.example.demo.user.domain.UserUpdate;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.*;
+import com.example.demo.user.service.UserService;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,47 +23,21 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 
-class UserServiceTest {
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestPropertySource("classpath:test-application.properties")
+@SqlGroup({ @Sql(value = "/sql/user-service-test-data.sql", executionPhase = BEFORE_TEST_METHOD),
+            @Sql(value = "/sql/delete-all-data.sql", executionPhase = AFTER_TEST_METHOD)})
+ class UserServiceTest {
 
+    @Autowired
     private UserService userService;
 
-    @BeforeEach
-    void init(){
-        FakeMailSender fakeMailSender = new FakeMailSender();
-        FakeUserRepository fakeUserRepository = new FakeUserRepository();
-        this.userService = UserService.builder()
-                .certificationService(new CertificationService(fakeMailSender))
-                .clockHolder(new TestClockHolder(123456789))
-                .uuidHolder(new TestUuidHolder("aaaa-1234-aaaa-5678"))
-                .userRepository(fakeUserRepository)
-                .build();
-
-        fakeUserRepository.save(User.builder()
-        .id(1L)
-        .email("kok202@naver.com")
-        .nickname("kok202")
-        .address("Seoul")
-        .certificationCode("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-        .status(UserStatus.ACTIVE)
-        .lastLoginAt(0L)
-        .build());
-
-        fakeUserRepository.save(User.builder()
-                .id(2L)
-                .email("kok303@naver.com")
-                .nickname("kok303")
-                .address("Seoul")
-                .certificationCode("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab")
-                .status(UserStatus.PENDING)
-                .lastLoginAt(0L)
-                .build());
-    }
     @MockBean
     private JavaMailSender javaMailSender;
 
@@ -114,11 +88,11 @@ class UserServiceTest {
                 .address("busan")
                 .nickname("kok202-1")
                 .build();
-        //
-        //BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
-        User user = userService.create(userCreate);
-        assertThat(user.getId()).isNotNull();
-        assertThat(user.getStatus()).isEqualTo(UserStatus.PENDING);
+
+        BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
+        User User = userService.create(userCreate);
+        assertThat(User.getId()).isNotNull();
+        assertThat(User.getStatus()).isEqualTo(UserStatus.PENDING);
     }
 
     @Test
