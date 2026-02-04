@@ -6,7 +6,7 @@ import com.example.demo.user.domain.User;
 import com.example.demo.user.domain.UserStatus;
 import com.example.demo.user.domain.UserCreate;
 import com.example.demo.user.domain.UserUpdate;
-import com.example.demo.user.service.UserService;
+import com.example.demo.user.service.UserServiceImpl;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -33,10 +33,10 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
 @TestPropertySource("classpath:test-application.properties")
 @SqlGroup({ @Sql(value = "/sql/user-service-test-data.sql", executionPhase = BEFORE_TEST_METHOD),
             @Sql(value = "/sql/delete-all-data.sql", executionPhase = AFTER_TEST_METHOD)})
- class UserServiceTest {
+ class UserServiceImplTest {
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @MockBean
     private JavaMailSender javaMailSender;
@@ -46,7 +46,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Order(1)
     public void getByEmail은_ACTIVATE_상태인_사용자를_찾아올_수_있다(){
         String mail = "kok202@naver.com";
-        User user = userService.getByEmail(mail);
+        User user = userServiceImpl.getByEmail(mail);
 
         assertThat(user).isNotNull();
         assertThat(user.getEmail()).isEqualTo(mail);
@@ -59,7 +59,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
         String mail = "kok303@naver.com";
 
         assertThatThrownBy(() ->  {
-            User user = userService.getByEmail(mail);
+            User user = userServiceImpl.getByEmail(mail);
         }).isInstanceOf(ResourceNotFoundException.class);
     }
 
@@ -68,7 +68,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void getById는_PENDING_상태인_사용자를_찾아올_수_없다(){
 
         assertThatThrownBy(()-> {
-            User user = userService.getById(2);
+            User user = userServiceImpl.getById(2);
         }).isInstanceOf(ResourceNotFoundException.class);
 
     }
@@ -76,7 +76,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Test
     @Order(4)
     public void getById는_ACTIVATE_상태인_사용자를_찾아올_수_있다(){
-        User user = userService.getById(1);
+        User user = userServiceImpl.getById(1);
         assertThat(user).isNotNull();
     }
 
@@ -90,7 +90,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
                 .build();
 
         BDDMockito.doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
-        User User = userService.create(userCreate);
+        User User = userServiceImpl.create(userCreate);
         assertThat(User.getId()).isNotNull();
         assertThat(User.getStatus()).isEqualTo(UserStatus.PENDING);
     }
@@ -103,8 +103,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
                 .nickname("kok202-2")
                 .build();
 
-        userService.update(1, updateUserDto);
-        User User = userService.getById(1);
+        userServiceImpl.update(1, updateUserDto);
+        User User = userServiceImpl.getById(1);
         assertThat(User.getAddress()).isEqualTo(updateUserDto.getAddress());
         assertThat(User.getNickname()).isEqualTo(updateUserDto.getNickname());
     }
@@ -112,18 +112,18 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     @Test
     @Order(7)
     public void 사용자를_로그인시키면_마지막_로그인시간이_변경된다(){
-        userService.login(1);
+        userServiceImpl.login(1);
 
-        User User = userService.getById(1);
+        User User = userServiceImpl.getById(1);
         assertThat(User.getLastLoginAt()).isGreaterThan(0);
     }
 
     @Test
     @Order(8)
     public void PENDING_상태인_사용자를_인증코드로_ACTIVATE_할_수_있다(){
-        userService.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab");
+        userServiceImpl.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab");
 
-        User User = userService.getById(2);
+        User User = userServiceImpl.getById(2);
         assertThat(User.getStatus()).isEqualTo(UserStatus.ACTIVE);
     }
 
@@ -132,7 +132,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.*;
     public void PENDING_상태인_사용자가_잘못된_인증코드를_받으면_에러를_던진다(){
 
         assertThatThrownBy(() ->
-        {userService.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac");})
+        {
+            userServiceImpl.verifyEmail(2,  "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac");})
                 .isInstanceOf(CertificationCodeNotMatchedException.class);
     }
 }

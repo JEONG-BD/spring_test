@@ -9,9 +9,9 @@ public class CertificationServiceTest {
     @Test
     public void 이메일과_컨텐츠가_제대로_만들어져서_보내지는지_확인한다() {
         FakeMailSender fakeMailSender = new FakeMailSender();
-        CertificationService certificationService = new CertificationService(fakeMailSender);
+        CertificationService certificationServiceImpl = new CertificationService(fakeMailSender);
 
-        certificationService.send("test@test.co.kr", 1, "tttt-tttt");
+        certificationServiceImpl.send("test@test.co.kr", 1, "tttt-tttt");
         String title = "Please certify your email address";
         String content = "Please click the following link to certify your email address" + "tttt-tttt";
         Assertions.assertThat(fakeMailSender.emeil).isEqualTo("test@test.co.kr");
